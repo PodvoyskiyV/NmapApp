@@ -1,27 +1,33 @@
-ML_network: 10.100.22.224/27
-CC_Chat: 10.100.19.64/26
-ID (API GW и Core Backend): 10.100.22.96/27
-LMS_Prod: 10.100.34.64/28
-1C: 10.100.16.192/26
-Databases: 10.100.16.0/25
-BANK Databases: 10.100.23.64/26
-Security: 10.100.24.64/27
-Cryp: 10.100.24.240/29
-uz-dc1-prod-a-bank_sec-subnet: 10.100.34.80/28
-BI/DWH: 10.100.17.64/26
-Hadoop: 10.100.17.0/26
-Prod_vertica: 10.100.23.128/25
+ADC (Netscaler): 10.100.8.0/23
 AD uz.humans.dc: 10.100.24.112/28
 ADFS: 10.100.24.208/29
+BI/DWH: 10.100.17.64/26
+BANK Databases: 10.100.23.64/26
 CA_webCDP: 10.100.24.192/28
+CC_Chat: 10.100.19.64/26
 Check GPO and Security Updates: 10.100.24.96/28
-Script_center: 10.100.24.224/28
-Script_ms network policy server: 10.100.24.216/29
-WSUS: 10.100.22.216/29
+Cryp: 10.100.24.240/29
+Databases: 10.100.16.0/25
+DNS/AD: 10.100.7.64/26
+Equipment_manage_DC: 10.100.14.128/25
+Hadoop: 10.100.17.0/26
 HSM_DEV: 10.100.17.144/28
 HSM_OAM: 10.100.17.128/28
 HSM_PROD_Active: 10.100.17.176/28
 HSM_PROD_Standby: 10.100.17.160/28
+ID (API GW и Core Backend): 10.100.22.96/27
+Infra (DHCP/TFTP + AWX + Gitlab Runners): 10.100.7.0/26
+Kubernetes: 10.100.15.0/24
+LMS_Prod: 10.100.34.64/28
+ML_network: 10.100.22.224/27
+Monitoring: 10.100.7.128/26
+Prod_vertica: 10.100.23.128/25
+RMD (Bastion + Term): 10.100.7.192/26
+Script_center: 10.100.24.224/28
+Script_ms network policy server: 10.100.24.216/29
+Security: 10.100.24.64/27
+SMTP Relay: 10.100.10.96/27
+Storages (sftp, s3): 10.100.16.128/26
 TSYS APP Active: 10.100.18.0/26
 TSYS APP Standby: 10.100.18.64/26
 TSYS Bomgar Active: 10.100.18.224/27
@@ -34,23 +40,14 @@ TSYS Fraud Guard Standby: 10.100.19.160/27
 TSYS NCrypt Active: 10.100.19.192/27
 TSYS NCrypt Standby: 10.100.19.224/27
 TSYS RMD Active: 10.100.18.192/27
-uz-dc-prod-cmdb: 10.100.34.0/27
-ADC (Netscaler): 10.100.8.0/23
-DNS/AD: 10.100.7.64/26
-Equipment_manage_DC: 10.100.14.128/25
-Infra (DHCP/TFTP + AWX + Gitlab Runners): 10.100.7.0/26
-Monitoring: 10.100.7.128/26
+UZM_Infra: 10.100.24.128/26
+VPN_GW (User VPN): 10.100.10.0/26
+VeeamBackup: 10.100.22.64/28
+VMware Management active: 10.100.12.0/25
+WSUS: 10.100.22.216/29
+Web Proxy: 10.100.10.64/27
+k8s-infra: 10.100.33.192/26
 prod-dns1: 10.100.32.144/28
 prod-dns2: 10.100.32.160/28
-RMD (Bastion + Term): 10.100.7.192/26
-SMTP Relay: 10.100.10.96/27
-VeeamBackup: 10.100.22.64/28
-VPN_GW (User VPN): 10.100.10.0/26
-Web Proxy: 10.100.10.64/27
-VMware Management active: 10.100.12.0/25
-k8s-infra: 10.100.33.192/26
-Kubernetes: 10.100.15.0/24
-Sentry vCenter: 10.100.32.224/28
-Storages (sftp, s3): 10.100.16.128/26
-UZM_Infra: 10.100.24.128/26
-TEST: 10.10.25.0/24
+uz-dc-prod-cmdb: 10.100.34.0/27
+uz-dc1-prod-a-bank_sec-subnet: 10.100.34.80/28

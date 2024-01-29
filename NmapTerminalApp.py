@@ -56,8 +56,7 @@ def create_directory(quarter, network):
     if operating_system == 'Windows':
         directory_path = f'D:\\NmapApp\ScanResults\{year}\{quarter}\{network}'
     else:
-        current_user = os.getenv('USER')
-        directory_path = f'/home/{current_user}/Desktop/{year}/{quarter}/{network}'
+        directory_path = f'/data/NmapScanResults/{year}/{quarter}/{network}'
 
     # Проверяем, существует ли директория, и создаем её, если не существует
     if not os.path.exists(directory_path):
@@ -112,7 +111,7 @@ def NmapApp():
                 report_path = f'D:\\NmapApp\ScanResults\{year}\{quarter}\{subnet}\{host}.txt'
                 nmap_command = fr'C:\"Program Files (x86)"\Nmap\nmap.exe -sV --script vulners {host} > nmap_report.txt'
             else:
-                report_path = f'/home/vadim/Desktop/{year}/{quarter}/{subnet}/{host}.txt'
+                report_path = f'/data/NmapScanResults/{year}/{quarter}/{subnet}/{host}.txt'
                 nmap_command = f"nmap -sV --script vulners {host} > nmap_report.txt"
 
             subprocess.run(nmap_command, shell=True, check=True)
