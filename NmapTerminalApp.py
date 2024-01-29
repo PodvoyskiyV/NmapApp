@@ -179,9 +179,10 @@ def parse_nmap_report(report_path):
                         'link': match.group(3)
                     }
                     vulnerabilities.append(vulnerability)
-        if vulnerabilities:
-            return vulnerabilities, True
-        else:
+    if vulnerabilities:
+        return vulnerabilities, True
+    else:
+        with open(report_path, 'r') as file:
             for line in file:
                 print(line)
                 vulnerabilities.append(line)
