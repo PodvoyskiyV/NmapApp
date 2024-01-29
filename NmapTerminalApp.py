@@ -182,6 +182,7 @@ def parse_nmap_report(report_path):
         else:
             for line in file:
                 vulnerabilities.append(line.strip())
+            return vulnerabilities
 
 
 
