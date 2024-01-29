@@ -187,8 +187,6 @@ def parse_nmap_report(report_path):
             return vulnerabilities, False
 
 
-
-
 def create_report(vulnerabilities, output_file, counters):
     with open(output_file, 'w') as file:
         for vulnerability in vulnerabilities:
