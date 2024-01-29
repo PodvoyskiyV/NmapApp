@@ -100,7 +100,6 @@ def NmapApp():
         counter = 0
 
         for host in live_hosts:
-            print(host)
             counters: dict[str, int] = {
                 "Low": 0,
                 "Medium": 0,
