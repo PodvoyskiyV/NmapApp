@@ -147,6 +147,7 @@ def get_risk_category(score, counters):
 
 def parse_nmap_report(report_path):
     vulnerabilities = []
+    ending = []
     current_host = None
     current_port = None
     current_service = None
@@ -176,8 +177,13 @@ def parse_nmap_report(report_path):
                         'link': match.group(3)
                     }
                     vulnerabilities.append(vulnerability)
+        if vulnerabilities:
+            return vulnerabilities
+        else:
+            for line in file:
+                vulnerabilities.append(line.strip())
 
-    return vulnerabilities
+
 
 
 def create_report(vulnerabilities, output_file, counters):
