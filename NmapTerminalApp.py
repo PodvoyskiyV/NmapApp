@@ -44,7 +44,7 @@ def confirm_subnet(subnet):
         print(f"\n\033[1;32mFound subnet:\033[0m {found_subnet}")
         confirm = input("Is this the correct subnet? (yes/no): ").lower()
         if confirm == "yes" or confirm == "y":
-            return True
+            return True, found_subnet
     print(f"\n\033[1;31mSubnet '{subnet}' not found. Please update the Networks.txt file.\033[0m")
     return False
 
@@ -91,9 +91,10 @@ def scan_for_live_hosts(ip_range):
 def NmapApp():
     quarter = get_quarter()
     subnet = get_subnet()
-    if confirm_subnet(subnet):
+    confirm, network_name = confirm_subnet(subnet)
+    if confirm:
         start_time = datetime.datetime.now()
-        create_directory(quarter, subnet)
+        create_directory(quarter, network_name)
         live_hosts = scan_for_live_hosts(subnet)
         print(f"Number of IPs: {len(live_hosts)}")
         counter = 0
@@ -108,10 +109,10 @@ def NmapApp():
             current_date = datetime.datetime.now()
             year = current_date.year
             if operating_system == 'Windows':
-                report_path = f'D:\\NmapApp\ScanResults\{year}\{quarter}\{subnet}\{host}.txt'
+                report_path = f'D:\\NmapApp\ScanResults\{year}\{quarter}\{network_name}\{host}.txt'
                 nmap_command = fr'C:\"Program Files (x86)"\Nmap\nmap.exe -sV --script vulners {host} > nmap_report.txt'
             else:
-                report_path = f'/data/NmapScanResults/{year}/{quarter}/{subnet}/{host}.txt'
+                report_path = f'/data/NmapScanResults/{year}/{quarter}/{network_name}/{host}.txt'
                 nmap_command = f"nmap -sV --script vulners {host} > nmap_report.txt"
 
             subprocess.run(nmap_command, shell=True, check=True)
