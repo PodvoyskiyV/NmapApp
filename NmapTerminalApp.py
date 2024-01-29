@@ -116,9 +116,12 @@ def NmapApp():
                 nmap_command = f"nmap -sV --script vulners {host} > nmap_report.txt"
 
             subprocess.run(nmap_command, shell=True, check=True)
-            vulnerabilities = parse_nmap_report('nmap_report.txt')
-            sorted_vulnerabilities = sorted(vulnerabilities, key=lambda x: x['score'], reverse=True)
-            create_report(sorted_vulnerabilities, report_path, counters)
+            vulnerabilities, vul = parse_nmap_report('nmap_report.txt')
+            if vul:
+                sorted_vulnerabilities = sorted(vulnerabilities, key=lambda x: x['score'], reverse=True)
+                create_report(sorted_vulnerabilities, report_path, counters)
+            else:
+                create_report(vulnerabilities, report_path)
             counter += 1
             progress = counter / len(live_hosts) * 100
             print(f"Progress: {progress:.2f}%")
@@ -147,7 +150,6 @@ def get_risk_category(score, counters):
 
 def parse_nmap_report(report_path):
     vulnerabilities = []
-    ending = []
     current_host = None
     current_port = None
     current_service = None
@@ -178,11 +180,11 @@ def parse_nmap_report(report_path):
                     }
                     vulnerabilities.append(vulnerability)
         if vulnerabilities:
-            return vulnerabilities
+            return vulnerabilities, True
         else:
             for line in file:
                 vulnerabilities.append(line.strip())
-            return vulnerabilities
+            return vulnerabilities, False
 
 
 
@@ -211,6 +213,12 @@ def create_report(vulnerabilities, output_file, counters):
                 f"Summary: {counters['Critical'] + counters['High'] + counters['Medium'] + counters['Low']}\n")
             file.write("-" * 50 + "\n")
             file.write(current_content)
+
+
+def create_report(vulnerabilities, output_file):
+    with open(output_file, 'w') as file:
+        for vulnerability in vulnerabilities:
+            file.write(vulnerability)
 
 
 if __name__ == "__main__":
