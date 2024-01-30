@@ -113,7 +113,7 @@ def NmapApp():
                 nmap_command = fr'C:\"Program Files (x86)"\Nmap\nmap.exe -sV --script vulners {host} > nmap_report.txt'
             else:
                 report_path = f'/data/NmapScanResults/{year}/{quarter}/{network_name}/{host}.txt'
-                nmap_command = f"nmap -sV --script vulners -p- {host} > nmap_report.txt"
+                nmap_command = f"nmap -sV --script vulners {host} > nmap_report.txt"
 
             subprocess.run(nmap_command, shell=True, check=True)
             vulnerabilities, vul = parse_nmap_report('nmap_report.txt')
@@ -217,7 +217,7 @@ def create_report(vulnerabilities, output_file, counters):
 def create_report(vulnerabilities, output_file):
     with open(output_file, 'w') as file:
         for vulnerability in vulnerabilities:
-            file.write(vulnerability)
+            file.write(vulnerability + "\n")
 
 
 if __name__ == "__main__":
