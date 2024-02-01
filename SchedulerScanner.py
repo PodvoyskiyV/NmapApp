@@ -107,6 +107,7 @@ def NmapApp():
             counter = 0
 
             for host in live_hosts:
+                start_scan_time = datetime.datetime.now()
                 counters: dict[str, int] = {
                     "Low": 0,
                     "Medium": 0,
@@ -121,7 +122,7 @@ def NmapApp():
                     nmap_report.txt'
                 else:
                     report_path = f'/data/ScanResultsNmap/{year}/{quarter}/{network_name}/{host}.txt'
-                    nmap_command = f"sudo nmap -sV --script vulners {host} > nmap_report.txt"
+                    nmap_command = f"sudo nmap -p- -sV --script vulners {host} > nmap_report.txt"
 
                 subprocess.run(nmap_command, shell=True, check=True)
                 vulnerabilities, vul = parse_nmap_report('nmap_report.txt')
@@ -135,11 +136,15 @@ def NmapApp():
                 with open("/data/NmapApp/nmap_log", 'a') as log:
                     log.write(f"Progress: {progress:.2f}%\n")
 
-                end_time = datetime.datetime.now()
-                duration = end_time - start_time
+                end_scan_time = datetime.datetime.now()
+                duration = end_scan_time - start_scan_time
 
                 with open("/data/NmapApp/nmap_log", 'a') as log:
-                    log.write(f"Duration of scan: {duration}\n")
+                    log.write(f"Duration of scan {host}: {duration}\n")
+            end_time = datetime.datetime.now()
+            duration = end_time - start_time
+            with open("/data/NmapApp/nmap_log", 'a') as log:
+                log.write(f"Duration of scan {network_name}: {duration}\n")
 
 
 def get_risk_category(score, counters):
@@ -229,6 +234,8 @@ def create_report(vulnerabilities, output_file):
     with open(output_file, 'w') as file:
         for vulnerability in vulnerabilities:
             file.write(vulnerability + "\n")
+        file.write("------------------------\n")
+        file.write("No vulnerabilities found")
 
 
 if __name__ == "__main__":
