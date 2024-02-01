@@ -3,6 +3,7 @@ import subprocess
 import os
 import platform
 import datetime
+import sys
 
 operating_system = platform.system()
 
@@ -38,9 +39,11 @@ def networks_from_file(subnet):
 def confirm_subnet(subnet):
     found_subnet = networks_from_file(subnet)
     if found_subnet:
+        with open("/data/NmapApp/nmap_log", 'a') as log:
+            log.write(f"Subnet {found_subnet} found\n")
         return True, found_subnet
     with open("/data/NmapApp/nmap_log", 'a') as log:
-        log.write(f"\n\033[1;31mSubnet '{subnet}' not found. Please update the Networks.txt file.\033[0m")
+        log.write(f"\n\033[1;31mSubnet '{subnet}' not found. Please update the Networks.txt file.\033[0m\n")
     return False
 
 
@@ -82,7 +85,7 @@ def scan_for_live_hosts(ip_range):
         return live_hosts
     else:
         with open("/data/NmapApp/nmap_log", 'a') as log:
-            log.write(f"Nmap command error: {result.stderr}")
+            log.write(f"Nmap command error: {result.stderr}\n")
         return []
 
 
@@ -99,7 +102,7 @@ def NmapApp():
             live_hosts = scan_for_live_hosts(subnet)
 
             with open("/data/NmapApp/nmap_log", 'a') as log:
-                log.write(f"Number of IPs: {len(live_hosts)}")
+                log.write(f"Number of IPs: {len(live_hosts)}\n")
 
             counter = 0
 
@@ -118,7 +121,7 @@ def NmapApp():
                     nmap_report.txt'
                 else:
                     report_path = f'/data/ScanResultsNmap/{year}/{quarter}/{network_name}/{host}.txt'
-                    nmap_command = f"nmap -sV --script vulners {host} > nmap_report.txt"
+                    nmap_command = f"sudo nmap -sV --script vulners {host} > nmap_report.txt"
 
                 subprocess.run(nmap_command, shell=True, check=True)
                 vulnerabilities, vul = parse_nmap_report('nmap_report.txt')
@@ -130,13 +133,13 @@ def NmapApp():
                 counter += 1
                 progress = counter / len(live_hosts) * 100
                 with open("/data/NmapApp/nmap_log", 'a') as log:
-                    log.write(f"Progress: {progress:.2f}%")
+                    log.write(f"Progress: {progress:.2f}%\n")
 
                 end_time = datetime.datetime.now()
                 duration = end_time - start_time
 
                 with open("/data/NmapApp/nmap_log", 'a') as log:
-                    log.write(f"Duration of scan: {duration}")
+                    log.write(f"Duration of scan: {duration}\n")
 
 
 def get_risk_category(score, counters):
@@ -229,10 +232,14 @@ def create_report(vulnerabilities, output_file):
 
 
 if __name__ == "__main__":
-    current_time = datetime.datetime.now()
-    time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
-    with open("/data/NmapApp/nmap_log", 'w') as log:
-        log.write(f"Scaner started in {time_str}\n")
-    NmapApp()
-    with open("/data/NmapApp/nmap_report", 'a') as log:
-        log.write(f"Scaner finished in {time_str}\n")
+    try:
+        current_time = datetime.datetime.now()
+        time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
+        with open("/data/NmapApp/nmap_log", 'w') as log:
+            log.write(f"Scaner started in {time_str}\n")
+        NmapApp()
+        with open("/data/NmapApp/nmap_log", 'a') as log:
+            log.write(f"Scaner finished in {time_str}\n")
+    except Exception as e:
+        with open('/data/NmapApp/nmap_log', 'a') as f:
+            print(f'Ошибка: {e}', file=f)
