@@ -240,6 +240,8 @@ if __name__ == "__main__":
         NmapApp()
         with open("/data/NmapApp/nmap_log", 'a') as log:
             log.write(f"Scaner finished in {time_str}\n")
+        with open('/data/NmapApp/Schedule.txt', 'w') as schedule:
+            schedule.write("# Example of IP: 192.168.1.0/24")
     except Exception as e:
         with open('/data/NmapApp/nmap_log', 'a') as f:
             print(f'Ошибка: {e}', file=f)
