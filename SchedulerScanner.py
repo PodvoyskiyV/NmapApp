@@ -8,19 +8,17 @@ operating_system = platform.system()
 
 
 def get_quarter():
-    print("\033[1;34mWhich quarter's scan do you want to run?\033[0m")
-    print("\033[1;36mQ1\033[0m - January, February, March")
-    print("\033[1;36mQ2\033[0m - April, May, June")
-    print("\033[1;36mQ3\033[0m - July, August, September")
-    print("\033[1;36mQ4\033[0m - October, November, December")
-    quarter = input("Enter Q1, Q2, Q3, or Q4: ").upper()
-    return quarter
+    now = datetime.datetime.now()
+    month = now.month
 
-
-def get_subnet():
-    print("\n\033[1;34mEnter the IP subnet for scanning (e.g., 192.168.1.0/24):\033[0m")
-    subnet = input("IP subnet: ")
-    return subnet
+    if 1 <= month <= 3:
+        return "Q1"
+    elif 4 <= month <= 6:
+        return "Q2"
+    elif 7 <= month <= 9:
+        return "Q3"
+    else:
+        return "Q4"
 
 
 def networks_from_file(subnet):
@@ -33,7 +31,6 @@ def networks_from_file(subnet):
                 key, value = map(str.strip, line.split(':'))
                 nets[key] = value
                 name = line.split(':')[0].strip()
-                print(name)
                 return name
         return None
 
@@ -41,11 +38,9 @@ def networks_from_file(subnet):
 def confirm_subnet(subnet):
     found_subnet = networks_from_file(subnet)
     if found_subnet:
-        print(f"\n\033[1;32mFound subnet:\033[0m {found_subnet}")
-        confirm = input("Is this the correct subnet? (yes/no): ").lower()
-        if confirm == "yes" or confirm == "y":
-            return True, found_subnet
-    print(f"\n\033[1;31mSubnet '{subnet}' not found. Please update the Networks.txt file.\033[0m")
+        return True, found_subnet
+    with open("/data/NmapApp/nmap_log", 'a') as log:
+        log.write(f"\n\033[1;31mSubnet '{subnet}' not found. Please update the Networks.txt file.\033[0m")
     return False
 
 
@@ -61,9 +56,11 @@ def create_directory(quarter, network):
     # Проверяем, существует ли директория, и создаем её, если не существует
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
-        print(f"Директория '{directory_path}' успешно создана.")
+        with open("/data/NmapApp/nmap_log", 'a') as log:
+            log.write(f"The directory '{directory_path}' was created successfully.")
     else:
-        print(f"Директория '{directory_path}' уже существует.")
+        with open("/data/NmapApp/nmap_log", 'a') as log:
+            log.write(f"The directory '{directory_path}' already exists.")
 
 
 def scan_for_live_hosts(ip_range):
@@ -79,56 +76,67 @@ def scan_for_live_hosts(ip_range):
         data = result.stdout.strip().split('\n')
         ip_pattern = re.compile(r'\b(?:\d{1,3}\.){3}\d{1,3}\b')
         live_hosts = ip_pattern.findall(' '.join(data))
-        print(live_hosts)
+        with open("/data/NmapApp/nmap_log", 'w') as log:
+            for host in live_hosts:
+                log.write(f"{host}\n")
         return live_hosts
     else:
-        # Если команда завершилась с ошибкой, выводим сообщение об ошибке
-        print("Ошибка выполнения команды nmap:")
-        print(result.stderr)
+        with open("/data/NmapApp/nmap_log", 'a') as log:
+            log.write(f"Nmap command error: {result.stderr}")
         return []
 
 
 def NmapApp():
     quarter = get_quarter()
-    subnet = get_subnet()
-    confirm, network_name = confirm_subnet(subnet)
-    if confirm:
-        start_time = datetime.datetime.now()
-        create_directory(quarter, network_name)
-        live_hosts = scan_for_live_hosts(subnet)
-        print(f"Number of IPs: {len(live_hosts)}")
-        counter = 0
+    with open("/data/NmapApp/Schedule.txt", 'r') as networks_file:
+        networks = networks_file.readlines()[1:]
+    for network in networks:
+        subnet = network.strip()
+        confirm, network_name = confirm_subnet(subnet)
+        if confirm:
+            start_time = datetime.datetime.now()
+            create_directory(quarter, network_name)
+            live_hosts = scan_for_live_hosts(subnet)
 
-        for host in live_hosts:
-            counters: dict[str, int] = {
-                "Low": 0,
-                "Medium": 0,
-                "High": 0,
-                "Critical": 0
-            }
-            current_date = datetime.datetime.now()
-            year = current_date.year
-            if operating_system == 'Windows':
-                report_path = f'D:\\NmapApp\ScanResults\{year}\{quarter}\{network_name}\{host}.txt'
-                nmap_command = fr'C:\"Program Files (x86)"\Nmap\nmap.exe -sV --script vulners {host} > nmap_report.txt'
-            else:
-                report_path = f'/data/NmapScanResults/{year}/{quarter}/{network_name}/{host}.txt'
-                nmap_command = f"nmap -sV --script vulners {host} > nmap_report.txt"
+            with open("/data/NmapApp/nmap_log", 'a') as log:
+                log.write(f"Number of IPs: {len(live_hosts)}")
 
-            subprocess.run(nmap_command, shell=True, check=True)
-            vulnerabilities, vul = parse_nmap_report('nmap_report.txt')
-            if vul:
-                sorted_vulnerabilities = sorted(vulnerabilities, key=lambda x: x['score'], reverse=True)
-                create_report(sorted_vulnerabilities, report_path, counters)
-            else:
-                create_report(vulnerabilities, report_path)
-            counter += 1
-            progress = counter / len(live_hosts) * 100
-            print(f"Progress: {progress:.2f}%")
+            counter = 0
 
-        end_time = datetime.datetime.now()
-        duration = end_time - start_time
-        print("Duration of scan:", duration)
+            for host in live_hosts:
+                counters: dict[str, int] = {
+                    "Low": 0,
+                    "Medium": 0,
+                    "High": 0,
+                    "Critical": 0
+                }
+                current_date = datetime.datetime.now()
+                year = current_date.year
+                if operating_system == 'Windows':
+                    report_path = f'D:\\ScanResultsNmap\{year}\{quarter}\{network_name}\{host}.txt'
+                    nmap_command = fr'C:\"Program Files (x86)"\Nmap\nmap.exe -sV --script vulners {host} > \
+                    nmap_report.txt'
+                else:
+                    report_path = f'/data/ScanResultsNmap/{year}/{quarter}/{network_name}/{host}.txt'
+                    nmap_command = f"nmap -sV --script vulners {host} > nmap_report.txt"
+
+                subprocess.run(nmap_command, shell=True, check=True)
+                vulnerabilities, vul = parse_nmap_report('nmap_report.txt')
+                if vul:
+                    sorted_vulnerabilities = sorted(vulnerabilities, key=lambda x: x['score'], reverse=True)
+                    create_report(sorted_vulnerabilities, report_path, counters)
+                else:
+                    create_report(vulnerabilities, report_path)
+                counter += 1
+                progress = counter / len(live_hosts) * 100
+                with open("/data/NmapApp/nmap_log", 'a') as log:
+                    log.write(f"Progress: {progress:.2f}%")
+
+                end_time = datetime.datetime.now()
+                duration = end_time - start_time
+
+                with open("/data/NmapApp/nmap_log", 'a') as log:
+                    log.write(f"Duration of scan: {duration}")
 
 
 def get_risk_category(score, counters):
@@ -221,4 +229,10 @@ def create_report(vulnerabilities, output_file):
 
 
 if __name__ == "__main__":
+    current_time = datetime.datetime.now()
+    time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
+    with open("/data/NmapApp/nmap_log", 'w') as log:
+        log.write(f"Scaner started in {time_str}\n")
     NmapApp()
+    with open("/data/NmapApp/nmap_report", 'a') as log:
+        log.write(f"Scaner finished in {time_str}\n")
