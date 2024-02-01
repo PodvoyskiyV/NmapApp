@@ -52,9 +52,9 @@ def create_directory(quarter, network):
     year = current_date.year
     # Определяем путь для создания директории в зависимости от операционной системы
     if operating_system == 'Windows':
-        directory_path = f'D:\\NmapApp\ScanResults\{year}\{quarter}\{network}'
+        directory_path = f'D:\\ScanResultsNmap\{year}\{quarter}\{network}'
     else:
-        directory_path = f'/data/NmapScanResults/{year}/{quarter}/{network}'
+        directory_path = f'/data/ScanResultsNmap/{year}/{quarter}/{network}'
 
     # Проверяем, существует ли директория, и создаем её, если не существует
     if not os.path.exists(directory_path):
