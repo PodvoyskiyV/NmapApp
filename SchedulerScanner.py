@@ -25,7 +25,7 @@ def get_quarter():
 def networks_from_file(subnet):
     nets = {}
 
-    with open('/data/NmapApp/Networks.txt', 'r') as file:
+    with open('/data/NmapApp/Files/Networks.txt', 'r') as file:
         for line in file:
             line = line.strip()
             if subnet in line:
@@ -66,6 +66,13 @@ def create_directory(quarter, network):
             log.write(f"The directory '{directory_path}' already exists.")
 
 
+def is_live_hosts_empty(file_path):
+    target_string = "# if you stopped previous scan add here IPs. Ex: 10.100.24.72"
+    with open(file_path, 'r') as file:
+        content = file.read().strip()
+        return content == target_string
+
+
 def scan_for_live_hosts(ip_range):
     if operating_system == 'Windows':
         command = fr'C:\Program Files (x86)\Nmap\nmap.exe -sn {ip_range}'
@@ -79,7 +86,7 @@ def scan_for_live_hosts(ip_range):
         data = result.stdout.strip().split('\n')
         ip_pattern = re.compile(r'\b(?:\d{1,3}\.){3}\d{1,3}\b')
         live_hosts = ip_pattern.findall(' '.join(data))
-        with open("/data/NmapApp/nmap_log", 'w') as log:
+        with open("/data/NmapApp/nmap_log", 'a') as log:
             for host in live_hosts:
                 log.write(f"{host}\n")
         return live_hosts
@@ -91,15 +98,22 @@ def scan_for_live_hosts(ip_range):
 
 def NmapApp():
     quarter = get_quarter()
-    with open("/data/NmapApp/Schedule.txt", 'r') as networks_file:
-        networks = networks_file.readlines()[1:]
+    path_live_hosts_file = "/data/NmapApp/Files/live_hosts.txt"
+    with open("/data/NmapApp/Files/Schedule.txt", 'r') as networks_file:
+        networks = [line.rstrip() for line in networks_file.readlines()[1:]]
     for network in networks:
         subnet = network.strip()
         confirm, network_name = confirm_subnet(subnet)
         if confirm:
             start_time = datetime.datetime.now()
             create_directory(quarter, network_name)
-            live_hosts = scan_for_live_hosts(subnet)
+            if is_live_hosts_empty(path_live_hosts_file):
+                live_hosts = scan_for_live_hosts(subnet)
+            else:
+                with open(path_live_hosts_file, 'r') as live_hosts_file:
+                    live_hosts = [line.rstrip() for line in live_hosts_file.readlines()[1:]]
+                with open(path_live_hosts_file, 'w') as live_hosts_file:
+                    live_hosts_file.write("# if you stopped previous scan add here IPs. Ex: 10.100.24.72\n")
 
             with open("/data/NmapApp/nmap_log", 'a') as log:
                 log.write(f"Number of IPs: {len(live_hosts)}\n")
@@ -122,7 +136,7 @@ def NmapApp():
                     nmap_report.txt'
                 else:
                     report_path = f'/data/ScanResultsNmap/{year}/{quarter}/{network_name}/{host}.txt'
-                    nmap_command = f"sudo nmap -p- -sV --script vulners {host} > nmap_report.txt"
+                    nmap_command = f"sudo nmap -sV --script vulners -p- {host} > nmap_report.txt"
 
                 subprocess.run(nmap_command, shell=True, check=True)
                 vulnerabilities, vul = parse_nmap_report('nmap_report.txt')
@@ -235,7 +249,7 @@ def create_report(vulnerabilities, output_file):
         for vulnerability in vulnerabilities:
             file.write(vulnerability + "\n")
         file.write("------------------------\n")
-        file.write("No vulnerabilities found")
+        file.write("No vulnerabilities found\n")
 
 
 if __name__ == "__main__":
@@ -247,7 +261,7 @@ if __name__ == "__main__":
         NmapApp()
         with open("/data/NmapApp/nmap_log", 'a') as log:
             log.write(f"Scaner finished in {time_str}\n")
-        with open('/data/NmapApp/Schedule.txt', 'w') as schedule:
+        with open('/data/NmapApp/Files/Schedule.txt', 'w') as schedule:
             schedule.write("# Example of IP: 192.168.1.0/24")
     except Exception as e:
         with open('/data/NmapApp/nmap_log', 'a') as f:

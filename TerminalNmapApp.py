@@ -26,7 +26,7 @@ def get_subnet():
 def networks_from_file(subnet):
     nets = {}
 
-    with open('Networks.txt', 'r') as file:
+    with open('Files/Networks.txt', 'r') as file:
         for line in file:
             line = line.strip()
             if subnet in line:

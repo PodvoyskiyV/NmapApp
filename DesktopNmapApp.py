@@ -172,7 +172,7 @@ def networks_from_file():
     nets = {}
     nets_names = []
 
-    with open('Networks.txt', 'r') as file:
+    with open('Files/Networks.txt', 'r') as file:
         for line in file:
             line = line.strip()
             if line:

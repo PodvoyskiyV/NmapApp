@@ -1,0 +1,1 @@
+# if you stopped previous scan add here IPs. Ex: 10.100.24.72
