@@ -101,6 +101,8 @@ def NmapApp():
     path_live_hosts_file = "/data/NmapApp/Files/live_hosts.txt"
     with open("/data/NmapApp/Files/Schedule.txt", 'r') as networks_file:
         networks = [line.rstrip() for line in networks_file.readlines()[1:]]
+    with open('/data/NmapApp/Files/Schedule.txt', 'w') as schedule:
+        schedule.write("# Example of IP: 192.168.1.0/24")
     for network in networks:
         subnet = network.strip()
         confirm, network_name = confirm_subnet(subnet)
@@ -261,8 +263,6 @@ if __name__ == "__main__":
         NmapApp()
         with open("/data/NmapApp/nmap_log", 'a') as log:
             log.write(f"Scaner finished in {time_str}\n")
-        with open('/data/NmapApp/Files/Schedule.txt', 'w') as schedule:
-            schedule.write("# Example of IP: 192.168.1.0/24")
     except Exception as e:
         with open('/data/NmapApp/nmap_log', 'a') as f:
             print(f'Ошибка: {e}', file=f)
